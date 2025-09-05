@@ -99,6 +99,75 @@ function autoconvexclass(::BetaMixtureClass{Nothing}; bandwidth = 0.05, grid = 0
     BetaMixtureClass(αs, βs)
 end
 
+#--------------------------------------------------
+# UniformScaleMixtureClass 
+#--------------------------------------------------
+function autoconvexclass(::UniformScaleMixtureClass{Nothing};
+    a_min, a_max, grid_scaling=√2)
+    npoint = ceil(Int, log(a_max/a_min)/log(grid_scaling))
+    a_grid = a_min .* grid_scaling .^ (0:npoint)
+    UniformScaleMixtureClass(a_grid)
+end
+
+function autoconvexclass(
+    𝒢::UniformScaleMixtureClass{Nothing},
+    Zs::AbstractVector{<:AbstractNormalSample};
+    a_min=nothing, a_max=nothing, kwargs...
+)
+    if isnothing(a_min)
+        a_min = (minimum(std.(Zs)) / 10) * √3 
+    end
+    
+    if isnothing(a_max)
+        m    = maximum(response.(Zs).^2 .-  var.(Zs))
+        a_max = m > 0 ? 2 * sqrt(3*m) : (8*a_min)
+    end
+    
+    autoconvexclass(𝒢; a_min=a_min, a_max=a_max, kwargs...)
+end
+
+
+#--------------------------------------------------
+# GaussianLocationScaleMixtureClass 
+#--------------------------------------------------
+function autoconvexclass(::GaussianLocationScaleMixtureClass{Nothing};
+    μ_min, μ_max, std, σ_min, σ_max, grid_scaling=√2)
+    step_μ = std / 4
+    μ_grid = μ_min:step_μ:μ_max
+    npoint_σ = ceil(Int, log2(σ_max/σ_min)/log2(grid_scaling))
+    σ_grid = σ_min*grid_scaling.^(0:npoint_σ)
+    
+    GaussianLocationScaleMixtureClass(μ_grid, std, σ_grid)
+end
+
+function autoconvexclass(
+    𝒢::GaussianLocationScaleMixtureClass{Nothing},
+    Zs::AbstractVector{<:AbstractNormalSample};
+    μ_min=nothing, μ_max=nothing, σ_min=nothing, σ_max=nothing, kwargs...
+)
+    #if isnothing(std)
+       #std = (minimum(std.(Zs)) / 10)
+    #end
+    if isnothing(μ_min)
+        μ_min = 0.005
+    end
+
+    if isnothing(μ_max)
+        μ_max = 6
+    end
+
+    if isnothing(σ_min)
+        σ_min = minimum(std.(Zs))./ 10
+    end
+
+    if isnothing(σ_max)
+        _max = maximum(response.(Zs).^2 .-  var.(Zs))
+        σ_max =  _max > 0.0 ? 2*sqrt(_max) : 8*σ_min
+    end
+    
+    autoconvexclass(𝒢; μ_min=μ_min, μ_max=μ_max, σ_min=σ_min, σ_max=σ_max, kwargs...)
+end
+
 
 
 
