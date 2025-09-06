@@ -48,23 +48,6 @@ StatsDiscretizations.unwrap(Z::EBayesSample) = response(Z)
 function set_response(Z::EBayesSample, znew=missing)
     Z = @set Z.Z = znew
 end
-"""
-    set_response(Z::TruncatedSample, znew=missing) -> TruncatedSample
-
-Update the response value of a truncated sample while preserving the truncation set.
-
-# Examples
-```jldoctest
-julia> Empirikos.set_response(Empirikos.TruncatedSample(StandardNormalSample(1), Interval(1.96, Inf)), 2)
-Trunc{N(2; μ, σ=1) to 1.96 .. Inf}
-julia> Empirikos.set_response(Empirikos.TruncatedSample(StandardNormalSample(1), Interval(1.96, Inf)))
-Trunc{N(missing; μ, σ=1.0) to 1.96 .. Inf}
-```
-"""
-function set_response(Z::TruncatedSample, znew=missing)
-    new_sample = set_response(Z.Z, znew)
-    TruncatedSample(new_sample, Z.truncation_set)
-end
 StatsDiscretizations.wrap(Z::EBayesSample, val) = set_response(Z, val)
 
 
