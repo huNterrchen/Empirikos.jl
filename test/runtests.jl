@@ -8,6 +8,7 @@ using QuadGK
 using Documenter
 using CSV
 using Distributions
+using Random
 
 # Doctests
 
@@ -31,12 +32,29 @@ end
 end
 
 
+@testset "Posterior" begin
+    include("test_posterior.jl")
+end
+
+
 @testset "Binomial samples" begin
     include("test_binomial.jl")
 end
 
 @testset "Normal samples" begin
     include("test_normal.jl")
+end
+
+@testset "FoldedNormal samples" begin
+    include("test_foldednormal.jl")
+end
+
+@testset "Truncated Poisson samples" begin
+    include("test_truncated_poisson.jl")
+end
+
+@testset "Normal-Chisquare samples" begin
+    include("test_t_normal_chisquare.jl")
 end
 
 @testset "Test targets" begin
