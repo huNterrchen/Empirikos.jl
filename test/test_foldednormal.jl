@@ -1,8 +1,6 @@
 using Empirikos
 using Test
 using Distributions
-using IntervalSets
-using Statistics
 @testset "Folded Distribution" begin
     # Symmetric normal
     d = Normal(0.0, 1.0)
@@ -49,18 +47,22 @@ using Statistics
     end
 
 
-    @testset "CDF" begin
+    @testset "CDF and logcdf" begin
         @test Empirikos.cdf(folded_d, 1.0) == cdf(d, 1.0) - cdf(d, -1.0)
         @test Empirikos.cdf(folded_d, 0.0) == 0.0
         
         # Asymmetric normal
         @test Empirikos.cdf(folded_asy, -1.0) == 0.0
         @test Empirikos.cdf(folded_asy, 2.0) == cdf(asy, 2.0) - cdf(asy, -2.0)
+        @test isapprox(Empirikos.logcdf(folded_asy, 4.0), log(cdf(asy, 4.0) - cdf(asy, -4.0)); atol=1e-12, rtol=1e-10)
 
         # Mixture of Asymmetric Normals
         @test Empirikos.cdf(fmx, -0.1) == 0.0
         @test Empirikos.cdf(fmx,  0.0) == 0.0
+        ys_pos = [0.0, 0.2, 0.8, 1.7, 3.5, 6.0]
         @test all(y -> isapprox(Empirikos.cdf(fmx, y), 0.3*(cdf(comp[1], y) - cdf(comp[1], -y))+ 0.7*(cdf(comp[2], y) - cdf(comp[2], -y));
+                             rtol=1e-10, atol=1e-12), ys_pos)
+        @test all(y -> isapprox(Empirikos.logcdf(fmx, y), log(0.3*(cdf(comp[1], y) - cdf(comp[1], -y))+ 0.7*(cdf(comp[2], y) - cdf(comp[2], -y)));
                              rtol=1e-10, atol=1e-12), ys_pos)
     end
 
@@ -291,3 +293,7 @@ using Statistics
         end
     end
 end
+
+
+
+
